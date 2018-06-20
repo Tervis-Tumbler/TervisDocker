@@ -19,9 +19,7 @@ function Invoke-DockerContainer {
     $Arguements = "run","--tty", "--interactive"
 
     foreach ($Key in $EnvironmentVariables.Keys) {
-        $Arguements += @"
---env $Key="$EnvironmentVariables.$Key"
-"@
+        $Arguements += "--env", "$Key=`"$EnvironmentVariables.$Key`""
     }
     
     $Arguements += "--name", $Name, $ImageName
