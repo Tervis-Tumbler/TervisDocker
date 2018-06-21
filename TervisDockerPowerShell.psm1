@@ -14,15 +14,47 @@ function Invoke-DockerContainer {
     param (
         $EnvironmentVariables,
         $Name,
-        $ImageName
+        $ImageName,
+        $Volumes,
+        [Switch]$Force,
+        [Switch]$Interactive
     )
+    if ($Force) {
+        & docker rm $Name
+    }
+
     $Arguements = "run","--tty", "--interactive"
 
+    if ($Interactive) {
+        $Arguements += "--interactive"
+    }
+
     foreach ($Key in $EnvironmentVariables.Keys) {
-        $Arguements += "--env", "$Key=`"$EnvironmentVariables.$Key`""
+        $Arguements += "--env", "$Key=`"$($EnvironmentVariables.$Key)`""
+    }
+    foreach ($Key in $Volumes.Keys) {
+        $Arguements += "--volume", "$Key`:$($Volumes.$Key)"
     }
     
     $Arguements += "--name", $Name, $ImageName
 
     & docker $Arguements
+}
+
+function Start-DockerContainer {
+    param (
+        $Name,
+        [Switch]$Interactive
+    )
+    $Arguements = "start", $Name
+    if ($Interactive) {
+        $Arguements += "--interactive"
+    }
+
+    & docker $Arguements
+}
+
+function Invoke-DockerContainterPowerShell {
+    $PasswordStateAPIKey = Get-PasswordstatePassword -ID 3985 | Select-Object -ExpandProperty Password
+    Invoke-DockerContainer -Name pwshtest -ImageName "microsoft/powershell" -Volumes @{$(Get-UserPSModulePath)="/root/.local/share/powershell/Modules"} -Force -EnvironmentVariables @{PasswordStateAPIKey=$PasswordStateAPIKey}
 }
