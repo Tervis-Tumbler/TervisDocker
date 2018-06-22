@@ -55,6 +55,15 @@ function Start-DockerContainer {
 }
 
 function Invoke-DockerContainterPowerShell {
+    param (
+        [Switch]$Nightly
+    )
     $PasswordStateAPIKey = Get-PasswordstatePassword -ID 3985 | Select-Object -ExpandProperty Password
-    Invoke-DockerContainer -Name pwshtest -ImageName "microsoft/powershell" -Volumes @{$(Get-UserPSModulePath)="/root/.local/share/powershell/Modules"} -Force -EnvironmentVariables @{PasswordStateAPIKey=$PasswordStateAPIKey}
+    $ImageName = if($Nightly) {
+        "microsoft/powershell-nightly"
+    } else {
+        "microsoft/powershell"
+    }
+    
+    Invoke-DockerContainer -Name pwshtest -ImageName $ImageName -Volumes @{$(Get-UserPSModulePath)="/root/.local/share/powershell/Modules"} -Force -EnvironmentVariables @{PasswordStateAPIKey=$PasswordStateAPIKey}
 }
