@@ -67,3 +67,15 @@ function Invoke-DockerContainterPowerShell {
     
     Invoke-DockerContainer -Name pwshtest -ImageName $ImageName -Volumes @{$(Get-UserPSModulePath)="/root/.local/share/powershell/Modules"} -Force -EnvironmentVariables @{PasswordStateAPIKey=$PasswordStateAPIKey}
 }
+
+function Invoke-DockerContainerPowerShellManually {
+    docker run -dit --name powershell --restart unless-stopped microsoft/powershell
+    gci "C:\Users\c.magnuson\OneDrive - tervis\Documents\WindowsPowerShell\Modules\TervisPasswordstatePasswordCache" |
+    % {
+        docker cp "$($_.FullName)" "powershell:/root/$($_.Name)"
+    }
+    #https://rominirani.com/docker-on-windows-mounting-host-directories-d96f3f056a2c
+    $ModulePath = Get-UserPSModulePath
+    $ModulePathInDockerVolumeFormat = $ModulePath -replace "\\", "/"
+    docker run -dit --name powershell -v "$ModulePathInDockerVolumeFormat:/usr/local/share/powershell/Modules" microsoft/powershell
+}
