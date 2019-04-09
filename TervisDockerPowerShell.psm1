@@ -77,5 +77,14 @@ function Invoke-DockerContainerPowerShellManually {
     #https://rominirani.com/docker-on-windows-mounting-host-directories-d96f3f056a2c
     $ModulePath = Get-UserPSModulePath
     $ModulePathInDockerVolumeFormat = $ModulePath -replace "\\", "/"
-    docker run -dit --name powershell -v "$ModulePathInDockerVolumeFormat:/usr/local/share/powershell/Modules" microsoft/powershell
+    docker run -dit --name powershell -v "$($ModulePathInDockerVolumeFormat):/usr/local/share/powershell/Modules" mcr.microsoft.com/powershell:6.2.0-alpine-3.8
+    docker exec -it powershell pwsh
+
+
+    #https://docs.microsoft.com/en-us/azure/container-registry/container-registry-get-started-portal
+    az account set --subscription "Production and Infrastructure - Microsoft Azure Enterprise"
+    az acr login --name tervisinfrastructure
+
+    docker tag envoyproxy/envoy-alpine:v1.9.0 tervisinfrastructure.azurecr.io/envoy2:v1
+    docker push tervisinfrastructure.azurecr.io/envoy2:v1
 }
